@@ -75,4 +75,14 @@ class AppConstants {
       },
     );
   }
+
+  /// Instruction Message for Persons Field
+  static const String instruction = '''
+  To split the bill among multiple persons, follow these steps:
+  1. Enter the number of persons in the field provided.
+  2. The corresponding fields for person names and amounts paid will appear.
+  3. Fill in the details for each person, including their name and the amount they paid.
+  4. Once all required fields are filled, the "Split Bill" button will be enabled.
+  5. Click the "Split Bill" button to view the bill summary, including the split amounts for each person.
+''';
 }

@@ -1,3 +1,4 @@
+import 'package:bill_split_calculator/Constants/constants.dart';
 import 'package:flutter/material.dart';
 
 ///Reusable with title and form
@@ -11,6 +12,7 @@ class ReUsableFormField extends StatelessWidget {
   final TextEditingController? textEditingController;
   final String? Function(String?)? validator;
   final void Function(String)? onChanged;
+  final bool isInstructionNeeded;
 
   ///consts
   const ReUsableFormField({
@@ -23,6 +25,7 @@ class ReUsableFormField extends StatelessWidget {
     this.textEditingController,
     this.validator,
     this.onChanged,
+    this.isInstructionNeeded = false,
   });
 
   @override
@@ -33,14 +36,37 @@ class ReUsableFormField extends StatelessWidget {
           ///Text
           Align(
             alignment: Alignment.centerLeft,
-            child: Text(
-              textTitle ?? "textTitle",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 20.5,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: isInstructionNeeded == false
+                ? Text(
+                    textTitle ?? "textTitle",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 20.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        textTitle ?? "textTitle",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          AppConstants.showDialogMessage(
+                              context,
+                              "How to Use this Field?",
+                              AppConstants.instruction);
+                        },
+                        icon: Icon(Icons.info_outline),
+                      ),
+                    ],
+                  ),
           ),
 
           ///Sized Box

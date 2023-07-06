@@ -12,20 +12,22 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  ///vars
   double tipPercentage = 0.0;
   double discountPercentage = 0.0;
   int numberOfPersons = 1;
   int maxNumberOfPersons = 100;
   double totalBill = 0.0;
+  bool isButtonEnabled = false;
 
+  ///Controllers
   TextEditingController billController = TextEditingController();
   TextEditingController deliveryChargesController = TextEditingController();
   TextEditingController discountController = TextEditingController();
   List<TextEditingController> personNameControllers = [];
   List<TextEditingController> personAmountPaidControllers = [];
 
-  bool isButtonEnabled = false;
-
+  ///initState
   @override
   void initState() {
     super.initState();
@@ -35,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
         List.generate(numberOfPersons, (_) => TextEditingController());
   }
 
+  ///dispose
   @override
   void dispose() {
     billController.dispose();
@@ -49,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  ///updateNumberOfPersons
   void updateNumberOfPersons(int value) {
     setState(() {
       numberOfPersons = value;
@@ -60,6 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
     updateButtonState();
   }
 
+  ///areFieldsFilled
   bool areFieldsFilled() {
     if (billController.text.isEmpty ||
         deliveryChargesController.text.isEmpty ||
@@ -72,12 +77,14 @@ class _HomeScreenState extends State<HomeScreen> {
     return true;
   }
 
+  ///updateButtonState
   void updateButtonState() {
     setState(() {
       isButtonEnabled = areFieldsFilled();
     });
   }
 
+  ///splitBill
   void splitBill() {
     if (areFieldsFilled()) {
       double totalBill = double.tryParse(billController.text) ?? 0.0;
@@ -111,6 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  ///  Widget build
   @override
   Widget build(BuildContext context) {
     double totalBill = double.tryParse(billController.text) ?? 0.0;
@@ -119,16 +127,31 @@ class _HomeScreenState extends State<HomeScreen> {
     double discount = double.tryParse(discountController.text) ?? 0.0;
     double finalBill = calculateFinalBill(totalBill, deliveryCharges, discount);
     return Scaffold(
+      ///AppBar
       appBar: AppBar(
+        leading: Icon(Icons.menu_outlined),
         title: const Text('Bill Split Calculator'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.more_vert_outlined),
+          ),
+        ],
       ),
-      bottomNavigationBar: Container(
+
+      ///bottomNavigationBar
+      bottomNavigationBar: SizedBox(
+        height: 65.5,
         child: ElevatedButton(
           onPressed: isButtonEnabled ? splitBill : null,
-          child: Text('Split Bill'),
+          child: Text(isButtonEnabled
+              ? 'Split Bill'
+              : "Please fill all required fields."),
         ),
       ),
+
+      ///BODY
       body: Container(
         padding: const EdgeInsets.all(10.0),
         child: ListView(
@@ -136,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ReUsableFormField(
               textTitle: 'Bill Amount',
               hintText: 'Enter the bill amount',
-              prefixIcon: Icons.attach_money,
+              prefixIcon: Icons.attach_money_outlined,
               filled: true,
               fillColor: Colors.grey[200],
               textEditingController: billController,
@@ -153,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ReUsableFormField(
               textTitle: 'Delivery Charges',
               hintText: 'Enter the delivery charges',
-              prefixIcon: Icons.local_shipping,
+              prefixIcon: Icons.local_shipping_outlined,
               filled: true,
               fillColor: Colors.grey[200],
               textEditingController: deliveryChargesController,
@@ -170,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ReUsableFormField(
               textTitle: 'Discount',
               hintText: 'Enter the discount',
-              prefixIcon: Icons.local_offer,
+              prefixIcon: Icons.local_offer_outlined,
               filled: true,
               fillColor: Colors.grey[200],
               textEditingController: discountController,
@@ -187,7 +210,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ReUsableFormField(
               textTitle: 'Number of Persons',
               hintText: 'Enter the number of persons',
-              prefixIcon: Icons.person,
+              isInstructionNeeded: true,
+              prefixIcon: Icons.person_outline,
               filled: true,
               fillColor: Colors.grey[200],
               textEditingController: TextEditingController(),
@@ -212,7 +236,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            ListView.builder(
+
+            ///List TO Generate Persons lists
+            ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: numberOfPersons,
@@ -222,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ReUsableFormField(
                       textTitle: 'Person ${index + 1} Name',
                       hintText: 'Enter the name of person ${index + 1}',
-                      prefixIcon: Icons.person,
+                      prefixIcon: Icons.person_outline,
                       filled: true,
                       fillColor: Colors.grey[200],
                       textEditingController: personNameControllers[index],
@@ -236,7 +262,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ReUsableFormField(
                       textTitle: 'Amount Paid',
                       hintText: 'Enter the amount paid by person ${index + 1}',
-                      prefixIcon: Icons.attach_money,
+                      prefixIcon: Icons.attach_money_outlined,
                       filled: true,
                       fillColor: Colors.grey[200],
                       textEditingController: personAmountPaidControllers[index],
@@ -249,6 +275,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                 );
+              },
+              separatorBuilder: (c, i) {
+                return Divider();
               },
             ),
           ],

@@ -20,14 +20,47 @@ class MyApp extends StatelessWidget {
 
       ///theme of app
       theme: ThemeData(
-        ///Text Theme
-        textTheme: GoogleFonts.sairaTextTheme(
-          Theme.of(context).textTheme,
+        // Primary color for the app
+        primaryColor: Colors.indigo,
+
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.indigo,
+          centerTitle: true,
+          titleTextStyle: TextStyle(
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        // Text theme
+        textTheme: GoogleFonts.sairaTextTheme().copyWith(
+          // Customize the text styles
+          displayLarge: const TextStyle(
+            fontSize: 24.0,
+            fontWeight: FontWeight.bold,
+          ),
+          displayMedium: const TextStyle(
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+          ),
+          bodyLarge: const TextStyle(
+            fontSize: 16.0,
+          ),
+        ),
+
+        // Button theme
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(
+                Colors.indigo), // Button background color
+            foregroundColor:
+                MaterialStateProperty.all(Colors.white), // Button text color
+          ),
         ),
       ),
 
       ///[initial Route]
-      home: HomeScreen(),
+      home: const HomeScreen(),
     );
   }
 }
