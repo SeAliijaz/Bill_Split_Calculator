@@ -1,4 +1,7 @@
+import 'package:bill_split_calculator/Constants/constants.dart';
 import 'package:bill_split_calculator/Custom_Widgets/reusable_formfield.dart';
+import 'package:bill_split_calculator/Models/split_data_model.dart';
+import 'package:bill_split_calculator/Screen/summary_screen.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -13,11 +16,13 @@ class _HomeScreenState extends State<HomeScreen> {
   double discountPercentage = 0.0;
   int numberOfPersons = 1;
   int maxNumberOfPersons = 100;
+  double totalBill = 0.0;
 
   TextEditingController billController = TextEditingController();
   TextEditingController deliveryChargesController = TextEditingController();
   TextEditingController discountController = TextEditingController();
   List<TextEditingController> personNameControllers = [];
+  List<TextEditingController> personAmountPaidControllers = [];
 
   bool isButtonEnabled = false;
 
@@ -25,6 +30,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     personNameControllers =
+        List.generate(numberOfPersons, (_) => TextEditingController());
+    personAmountPaidControllers =
         List.generate(numberOfPersons, (_) => TextEditingController());
   }
 
@@ -36,6 +43,9 @@ class _HomeScreenState extends State<HomeScreen> {
     for (var controller in personNameControllers) {
       controller.dispose();
     }
+    for (var controller in personAmountPaidControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -43,6 +53,8 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       numberOfPersons = value;
       personNameControllers =
+          List.generate(value, (_) => TextEditingController());
+      personAmountPaidControllers =
           List.generate(value, (_) => TextEditingController());
     });
     updateButtonState();
@@ -52,7 +64,9 @@ class _HomeScreenState extends State<HomeScreen> {
     if (billController.text.isEmpty ||
         deliveryChargesController.text.isEmpty ||
         discountController.text.isEmpty ||
-        personNameControllers.any((controller) => controller.text.isEmpty)) {
+        personNameControllers.any((controller) => controller.text.isEmpty) ||
+        personAmountPaidControllers
+            .any((controller) => controller.text.isEmpty)) {
       return false;
     }
     return true;
@@ -66,56 +80,44 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void splitBill() {
     if (areFieldsFilled()) {
-      double splitAmount = calculateSplitAmount();
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Split Bill'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (int i = 0; i < numberOfPersons; i++)
-                  Text(
-                    '${personNameControllers[i].text}: \$${splitAmount.toStringAsFixed(2)}',
-                  ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Close'),
-              ),
-            ],
-          );
-        },
+      double totalBill = double.tryParse(billController.text) ?? 0.0;
+      double deliveryCharges =
+          double.tryParse(deliveryChargesController.text) ?? 0.0;
+      double discount = double.tryParse(discountController.text) ?? 0.0;
+      double finalBill =
+          calculateFinalBill(totalBill, deliveryCharges, discount);
+      List<SplitData> splitDataList = [];
+      for (int i = 0; i < numberOfPersons; i++) {
+        String personName = personNameControllers[i].text;
+        double amountPaid =
+            double.tryParse(personAmountPaidControllers[i].text) ?? 0.0;
+        double splitAmount = calculateSplitAmount(finalBill, amountPaid);
+        SplitData splitData = SplitData(
+            personName: personName,
+            amountPaid: amountPaid,
+            totalBill: finalBill,
+            splitAmount: splitAmount);
+        splitDataList.add(splitData);
+      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SummaryScreen(splitDataList: splitDataList),
+        ),
       );
     } else {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Validation Error'),
-            content: const Text('Please fill all required fields.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Close'),
-              ),
-            ],
-          );
-        },
-      );
+      AppConstants.showDialogMessage(
+          context, "Validation Error", "Please fill all required fields.");
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    double totalBill = double.tryParse(billController.text) ?? 0.0;
+    double deliveryCharges =
+        double.tryParse(deliveryChargesController.text) ?? 0.0;
+    double discount = double.tryParse(discountController.text) ?? 0.0;
+    double finalBill = calculateFinalBill(totalBill, deliveryCharges, discount);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Bill Split Calculator'),
@@ -197,24 +199,55 @@ class _HomeScreenState extends State<HomeScreen> {
                 return null;
               },
             ),
+            ListTile(
+              title: Text(
+                'Total Bill:',
+                style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+              ),
+              trailing: Text(
+                "\$${finalBill.toStringAsFixed(2)}",
+                style: TextStyle(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: numberOfPersons,
               itemBuilder: (context, index) {
-                return ReUsableFormField(
-                  textTitle: 'Person ${index + 1} Name',
-                  hintText: 'Enter the name of person ${index + 1}',
-                  prefixIcon: Icons.person,
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                  textEditingController: personNameControllers[index],
-                  onChanged: (value) {
-                    updateButtonState();
-                  },
-                  validator: (value) {
-                    return null;
-                  },
+                return Column(
+                  children: [
+                    ReUsableFormField(
+                      textTitle: 'Person ${index + 1} Name',
+                      hintText: 'Enter the name of person ${index + 1}',
+                      prefixIcon: Icons.person,
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                      textEditingController: personNameControllers[index],
+                      onChanged: (value) {
+                        updateButtonState();
+                      },
+                      validator: (value) {
+                        return null;
+                      },
+                    ),
+                    ReUsableFormField(
+                      textTitle: 'Amount Paid',
+                      hintText: 'Enter the amount paid by person ${index + 1}',
+                      prefixIcon: Icons.attach_money,
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                      textEditingController: personAmountPaidControllers[index],
+                      onChanged: (value) {
+                        updateButtonState();
+                      },
+                      validator: (value) {
+                        return null;
+                      },
+                    ),
+                  ],
                 );
               },
             ),
@@ -224,13 +257,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  double calculateSplitAmount() {
-    double totalBill = double.tryParse(billController.text) ?? 0.0;
-    double deliveryCharges =
-        double.tryParse(deliveryChargesController.text) ?? 0.0;
-    double discount = double.tryParse(discountController.text) ?? 0.0;
-    double finalBill = calculateFinalBill(totalBill, deliveryCharges, discount);
-    double splitAmount = finalBill / numberOfPersons;
+  double calculateSplitAmount(double totalBill, double amountPaid) {
+    double totalAmountPaid = personAmountPaidControllers.fold(
+      0.0,
+      (previousValue, controller) =>
+          previousValue + (double.tryParse(controller.text) ?? 0.0),
+    );
+    double totalRemainingAmount = totalBill - totalAmountPaid;
+    double splitAmount = (totalRemainingAmount / numberOfPersons) + amountPaid;
     return splitAmount;
   }
 
