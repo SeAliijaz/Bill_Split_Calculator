@@ -37,8 +37,8 @@ class ReUsableFormField extends StatelessWidget {
               textTitle ?? "textTitle",
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 25.0,
-                fontWeight: FontWeight.w500,
+                fontSize: 20.5,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),

@@ -1,4 +1,3 @@
-import 'package:bill_split_calculator/Custom_Widgets/action_button.dart';
 import 'package:bill_split_calculator/Custom_Widgets/reusable_formfield.dart';
 import 'package:flutter/material.dart';
 
@@ -13,9 +12,12 @@ class _HomeScreenState extends State<HomeScreen> {
   double tipPercentage = 0.0;
   double discountPercentage = 0.0;
   int numberOfPersons = 1;
+  int maxNumberOfPersons = 100;
 
   TextEditingController billController = TextEditingController();
   List<TextEditingController> personNameControllers = [];
+
+  bool isButtonEnabled = false;
 
   @override
   void initState() {
@@ -26,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    billController.dispose();
     for (var controller in personNameControllers) {
       controller.dispose();
     }
@@ -38,15 +41,71 @@ class _HomeScreenState extends State<HomeScreen> {
       personNameControllers =
           List.generate(value, (_) => TextEditingController());
     });
+    updateButtonState();
   }
 
-  bool validateFields() {
-    if (billController.text.isEmpty) return false;
-    if (numberOfPersons < 1) return false;
-    for (var controller in personNameControllers) {
-      if (controller.text.isEmpty) return false;
+  bool areFieldsFilled() {
+    if (billController.text.isEmpty ||
+        personNameControllers.any((controller) => controller.text.isEmpty)) {
+      return false;
     }
     return true;
+  }
+
+  void updateButtonState() {
+    setState(() {
+      isButtonEnabled = areFieldsFilled();
+    });
+  }
+
+  void splitBill() {
+    if (areFieldsFilled()) {
+      double splitAmount = calculateSplitAmount();
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Split Bill'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (int i = 0; i < numberOfPersons; i++)
+                  Text(
+                    '${personNameControllers[i].text}: \$${splitAmount.toStringAsFixed(2)}',
+                  ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Close'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Validation Error'),
+            content: const Text('Please fill all required fields.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Close'),
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   @override
@@ -54,17 +113,16 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Bill Split Calculator'),
+        centerTitle: true,
       ),
       bottomNavigationBar: Container(
-        child: ActionButton(
-          text: validateFields()
-              ? "Split Bill"
-              : "Please fill all required fields",
-          onPressed: validateFields() ? splitBill : null,
+        child: ElevatedButton(
+          onPressed: isButtonEnabled ? splitBill : null,
+          child: Text('Split Bill'),
         ),
       ),
       body: Container(
-        padding: EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(10.0),
         child: ListView(
           children: [
             ReUsableFormField(
@@ -80,16 +138,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
                 return null;
               },
-            ),
-            ReUsableFormField(
-              textTitle: 'Discount',
-              hintText: 'Enter the discount',
-              prefixIcon: Icons.local_offer,
-              filled: true,
-              fillColor: Colors.grey[200],
-              textEditingController: TextEditingController(),
-              validator: (value) {
-                return null;
+              onChanged: (value) {
+                updateButtonState();
               },
             ),
             ReUsableFormField(
@@ -119,10 +169,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   filled: true,
                   fillColor: Colors.grey[200],
                   textEditingController: personNameControllers[index],
+                  onChanged: (value) {
+                    updateButtonState();
+                  },
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter the name of person ${index + 1}';
-                    }
                     return null;
                   },
                 );
@@ -134,79 +184,17 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  double calculateTipAmount() {
-    double totalBill = 0;
-    try {
-      totalBill = double.parse(billController.text);
-    } catch (e) {
-      print('Invalid bill amount');
-    }
-    double tipAmount = totalBill * (tipPercentage / 100);
-    return tipAmount;
-  }
-
-  double calculateDiscountAmount() {
-    double totalBill = 0;
-    try {
-      totalBill = double.parse(billController.text);
-    } catch (e) {
-      print('Invalid bill amount');
-    }
-    double discountAmount = totalBill * (discountPercentage / 100);
-    return discountAmount;
-  }
-
-  double calculateFinalBill() {
-    double totalBill = 0;
-    try {
-      totalBill = double.parse(billController.text);
-    } catch (e) {
-      print('Invalid bill amount');
-    }
-    double tipAmount = calculateTipAmount();
-    double discountAmount = calculateDiscountAmount();
-    double finalBill = totalBill - discountAmount + tipAmount;
-    return finalBill;
-  }
-
   double calculateSplitAmount() {
-    double finalBill = 0;
-    try {
-      finalBill = calculateFinalBill();
-    } catch (e) {
-      print('Error calculating the final bill');
-    }
+    double totalBill = double.tryParse(billController.text) ?? 0.0;
+    double finalBill = calculateFinalBill(totalBill);
     double splitAmount = finalBill / numberOfPersons;
     return splitAmount;
   }
 
-  void splitBill() {
-    double splitAmount = calculateSplitAmount();
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Split Bill'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (int i = 0; i < numberOfPersons; i++)
-                Text(
-                  '${personNameControllers[i].text}: \$${splitAmount.toStringAsFixed(2)}',
-                ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
+  double calculateFinalBill(double totalBill) {
+    double tipAmount = totalBill * (tipPercentage / 100);
+    double discountAmount = totalBill * (discountPercentage / 100);
+    double finalBill = totalBill - discountAmount + tipAmount;
+    return finalBill;
   }
 }
