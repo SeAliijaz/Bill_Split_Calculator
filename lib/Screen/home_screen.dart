@@ -15,6 +15,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int maxNumberOfPersons = 100;
 
   TextEditingController billController = TextEditingController();
+  TextEditingController deliveryChargesController = TextEditingController();
+  TextEditingController discountController = TextEditingController();
   List<TextEditingController> personNameControllers = [];
 
   bool isButtonEnabled = false;
@@ -29,6 +31,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     billController.dispose();
+    deliveryChargesController.dispose();
+    discountController.dispose();
     for (var controller in personNameControllers) {
       controller.dispose();
     }
@@ -46,6 +50,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool areFieldsFilled() {
     if (billController.text.isEmpty ||
+        deliveryChargesController.text.isEmpty ||
+        discountController.text.isEmpty ||
         personNameControllers.any((controller) => controller.text.isEmpty)) {
       return false;
     }
@@ -143,6 +149,40 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             ReUsableFormField(
+              textTitle: 'Delivery Charges',
+              hintText: 'Enter the delivery charges',
+              prefixIcon: Icons.local_shipping,
+              filled: true,
+              fillColor: Colors.grey[200],
+              textEditingController: deliveryChargesController,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter the delivery charges';
+                }
+                return null;
+              },
+              onChanged: (value) {
+                updateButtonState();
+              },
+            ),
+            ReUsableFormField(
+              textTitle: 'Discount',
+              hintText: 'Enter the discount',
+              prefixIcon: Icons.local_offer,
+              filled: true,
+              fillColor: Colors.grey[200],
+              textEditingController: discountController,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter the discount';
+                }
+                return null;
+              },
+              onChanged: (value) {
+                updateButtonState();
+              },
+            ),
+            ReUsableFormField(
               textTitle: 'Number of Persons',
               hintText: 'Enter the number of persons',
               prefixIcon: Icons.person,
@@ -186,15 +226,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   double calculateSplitAmount() {
     double totalBill = double.tryParse(billController.text) ?? 0.0;
-    double finalBill = calculateFinalBill(totalBill);
+    double deliveryCharges =
+        double.tryParse(deliveryChargesController.text) ?? 0.0;
+    double discount = double.tryParse(discountController.text) ?? 0.0;
+    double finalBill = calculateFinalBill(totalBill, deliveryCharges, discount);
     double splitAmount = finalBill / numberOfPersons;
     return splitAmount;
   }
 
-  double calculateFinalBill(double totalBill) {
+  double calculateFinalBill(
+      double totalBill, double deliveryCharges, double discount) {
     double tipAmount = totalBill * (tipPercentage / 100);
-    double discountAmount = totalBill * (discountPercentage / 100);
-    double finalBill = totalBill - discountAmount + tipAmount;
+    double finalBill = totalBill + deliveryCharges - discount + tipAmount;
     return finalBill;
   }
 }
