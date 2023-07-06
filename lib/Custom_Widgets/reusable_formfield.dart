@@ -43,24 +43,27 @@ class ReUsableFormField extends StatelessWidget {
             ),
           ),
 
-          ///SizedBox
+          ///Sized Box
           SizedBox(height: 10),
 
           ///FormField
-          TextFormField(
-            controller: textEditingController,
-            validator: validator,
-            decoration: InputDecoration(
-              filled: filled,
-              fillColor: fillColor,
-              prefixIcon: Icon(prefixIcon ?? Icons.person_outline),
-              hintText: hintText ?? "hintText",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+          Center(
+            child: TextFormField(
+              controller: textEditingController,
+              validator: validator,
+              decoration: InputDecoration(
+                filled: filled,
+                fillColor: fillColor,
+                prefixIcon: Icon(prefixIcon ?? Icons.person_outline),
+                hintText: hintText ?? "hintText",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
+              onChanged: onChanged,
             ),
-            onChanged: onChanged,
           ),
+          SizedBox(height: 10),
         ],
       ),
     );

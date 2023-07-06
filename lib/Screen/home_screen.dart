@@ -1,3 +1,4 @@
+import 'package:bill_split_calculator/Custom_Widgets/action_button.dart';
 import 'package:bill_split_calculator/Custom_Widgets/reusable_formfield.dart';
 import 'package:flutter/material.dart';
 
@@ -39,15 +40,32 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  bool validateFields() {
+    if (billController.text.isEmpty) return false;
+    if (numberOfPersons < 1) return false;
+    for (var controller in personNameControllers) {
+      if (controller.text.isEmpty) return false;
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Bill Split Calculator'),
       ),
+      bottomNavigationBar: Container(
+        child: ActionButton(
+          text: validateFields()
+              ? "Split Bill"
+              : "Please fill all required fields",
+          onPressed: validateFields() ? splitBill : null,
+        ),
+      ),
       body: Container(
+        padding: EdgeInsets.all(10.0),
         child: ListView(
-          padding: const EdgeInsets.all(16.0),
           children: [
             ReUsableFormField(
               textTitle: 'Bill Amount',
@@ -64,8 +82,8 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             ReUsableFormField(
-              textTitle: 'Discount (%)',
-              hintText: 'Enter the discount percentage',
+              textTitle: 'Discount',
+              hintText: 'Enter the discount',
               prefixIcon: Icons.local_offer,
               filled: true,
               fillColor: Colors.grey[200],
@@ -89,36 +107,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 return null;
               },
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Tip: ${calculateTipAmount().toStringAsFixed(2)}',
-              style: const TextStyle(fontSize: 16),
-            ),
-            Text(
-              'Discount: ${calculateDiscountAmount().toStringAsFixed(2)}',
-              style: const TextStyle(fontSize: 16),
-            ),
-            Text(
-              'Total Bill: ${calculateFinalBill().toStringAsFixed(2)}',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                splitBill();
-              },
-              child: const Text('Split Bill'),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Each Person Pays: ${calculateSplitAmount().toStringAsFixed(2)}',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Persons',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -132,6 +120,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   fillColor: Colors.grey[200],
                   textEditingController: personNameControllers[index],
                   validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the name of person ${index + 1}';
+                    }
                     return null;
                   },
                 );
