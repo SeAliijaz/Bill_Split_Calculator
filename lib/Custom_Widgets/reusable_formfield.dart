@@ -2,26 +2,23 @@ import 'package:bill_split_calculator/Constants/constants.dart';
 import 'package:flutter/material.dart';
 
 ///Reusable with title and form
-class ReUsableFormField extends StatelessWidget {
+class CustomTextField extends StatelessWidget {
   ///var
   final String? textTitle;
   final String? hintText;
   final IconData? prefixIcon;
-  final bool? filled;
-  final Color? fillColor;
+
   final TextEditingController? textEditingController;
   final String? Function(String?)? validator;
   final void Function(String)? onChanged;
   final bool isInstructionNeeded;
 
   ///consts
-  const ReUsableFormField({
+  const CustomTextField({
     super.key,
     this.textTitle,
     this.hintText,
     this.prefixIcon,
-    this.filled = false,
-    this.fillColor,
     this.textEditingController,
     this.validator,
     this.onChanged,
@@ -58,10 +55,10 @@ class ReUsableFormField extends StatelessWidget {
                       ),
                       IconButton(
                         onPressed: () {
-                          AppConstants.showDialogMessage(
+                          AppUtilities.showDialogMessage(
                               context,
                               "How to Use this Field?",
-                              AppConstants.instruction);
+                              AppUtilities.instruction);
                         },
                         icon: Icon(Icons.info_outline),
                       ),
@@ -73,23 +70,25 @@ class ReUsableFormField extends StatelessWidget {
           SizedBox(height: 10),
 
           ///FormField
-          Center(
-            child: TextFormField(
-              controller: textEditingController,
-              validator: validator,
-              decoration: InputDecoration(
-                filled: filled,
-                fillColor: fillColor,
-                prefixIcon: Icon(prefixIcon ?? Icons.person_outline),
-                hintText: hintText ?? "hintText",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+          Container(
+            height: MediaQuery.of(context).size.height * 0.090,
+            child: Card(
+              child: Center(
+                child: TextFormField(
+                  controller: textEditingController,
+                  validator: validator,
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.all(16.0),
+                    border: InputBorder.none,
+                    prefixIcon: Icon(prefixIcon ?? Icons.person_outline),
+                    hintText: hintText ?? "hintText",
+                  ),
+                  onChanged: onChanged,
                 ),
               ),
-              onChanged: onChanged,
             ),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
         ],
       ),
     );

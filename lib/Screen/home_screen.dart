@@ -1,3 +1,4 @@
+import 'package:bill_split_calculator/Components/custom_drawer.dart';
 import 'package:bill_split_calculator/Constants/constants.dart';
 import 'package:bill_split_calculator/Custom_Widgets/reusable_formfield.dart';
 import 'package:bill_split_calculator/Models/split_data_model.dart';
@@ -113,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     } else {
-      AppConstants.showDialogMessage(
+      AppUtilities.showDialogMessage(
           context, "Validation Error", "Please fill all required fields.");
     }
   }
@@ -129,16 +130,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       ///AppBar
       appBar: AppBar(
-        leading: Icon(Icons.menu_outlined),
         title: const Text('Bill Split Calculator'),
         centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.more_vert_outlined),
-          ),
-        ],
       ),
+
+      ///Drawer
+      drawer: CustomDrawer(),
 
       ///bottomNavigationBar
       bottomNavigationBar: SizedBox(
@@ -156,12 +153,10 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.all(10.0),
         child: ListView(
           children: [
-            ReUsableFormField(
+            CustomTextField(
               textTitle: 'Bill Amount',
               hintText: 'Enter the bill amount',
               prefixIcon: Icons.attach_money_outlined,
-              filled: true,
-              fillColor: Colors.grey[200],
               textEditingController: billController,
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -173,12 +168,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 updateButtonState();
               },
             ),
-            ReUsableFormField(
+            CustomTextField(
               textTitle: 'Delivery Charges',
               hintText: 'Enter the delivery charges',
               prefixIcon: Icons.local_shipping_outlined,
-              filled: true,
-              fillColor: Colors.grey[200],
               textEditingController: deliveryChargesController,
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -190,12 +183,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 updateButtonState();
               },
             ),
-            ReUsableFormField(
+            CustomTextField(
               textTitle: 'Discount',
               hintText: 'Enter the discount',
               prefixIcon: Icons.local_offer_outlined,
-              filled: true,
-              fillColor: Colors.grey[200],
               textEditingController: discountController,
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -207,13 +198,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 updateButtonState();
               },
             ),
-            ReUsableFormField(
+            CustomTextField(
               textTitle: 'Number of Persons',
               hintText: 'Enter the number of persons',
               isInstructionNeeded: true,
               prefixIcon: Icons.person_outline,
-              filled: true,
-              fillColor: Colors.grey[200],
               textEditingController: TextEditingController(),
               onChanged: (value) {
                 int numberOfPersons = int.tryParse(value) ?? 0;
@@ -245,12 +234,10 @@ class _HomeScreenState extends State<HomeScreen> {
               itemBuilder: (context, index) {
                 return Column(
                   children: [
-                    ReUsableFormField(
+                    CustomTextField(
                       textTitle: 'Person ${index + 1} Name',
                       hintText: 'Enter the name of person ${index + 1}',
                       prefixIcon: Icons.person_outline,
-                      filled: true,
-                      fillColor: Colors.grey[200],
                       textEditingController: personNameControllers[index],
                       onChanged: (value) {
                         updateButtonState();
@@ -259,12 +246,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         return null;
                       },
                     ),
-                    ReUsableFormField(
+                    CustomTextField(
                       textTitle: 'Amount Paid',
                       hintText: 'Enter the amount paid by person ${index + 1}',
                       prefixIcon: Icons.attach_money_outlined,
-                      filled: true,
-                      fillColor: Colors.grey[200],
                       textEditingController: personAmountPaidControllers[index],
                       onChanged: (value) {
                         updateButtonState();

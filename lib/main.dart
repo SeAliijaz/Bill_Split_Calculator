@@ -1,6 +1,5 @@
 import 'package:bill_split_calculator/Screen/home_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,21 +29,6 @@ class MyApp extends StatelessWidget {
             fontSize: 20.0,
             fontWeight: FontWeight.bold,
             color: Colors.white,
-          ),
-        ),
-        // Text theme
-        textTheme: GoogleFonts.sairaTextTheme().copyWith(
-          // Customize the text styles
-          displayLarge: const TextStyle(
-            fontSize: 24.0,
-            fontWeight: FontWeight.bold,
-          ),
-          displayMedium: const TextStyle(
-            fontSize: 20.0,
-            fontWeight: FontWeight.bold,
-          ),
-          bodyLarge: const TextStyle(
-            fontSize: 16.0,
           ),
         ),
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class AppConstants {
+class AppUtilities {
   ///Custom Dialog To Show Message
   static showDialogMessage(
     final BuildContext context,

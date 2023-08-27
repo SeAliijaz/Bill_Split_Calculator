@@ -56,7 +56,7 @@ class SummaryScreen extends StatelessWidget {
           );
         },
         separatorBuilder: (c, i) {
-          return Divider();
+          return const Divider();
         },
       ),
       bottomNavigationBar: Container(
